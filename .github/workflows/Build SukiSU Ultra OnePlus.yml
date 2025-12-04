@@ -18,6 +18,7 @@ on:
           - oneplus_ace2_v
           - oneplus_ace_pro_v
           - oneplus_11_v
+          - oneplus_11_b
           - oneplus_12r_v
           - oneplus_12r_b
           - oneplus_ace2_pro_v
@@ -552,7 +553,7 @@ jobs:
             SHORT_HASH=${MANUAL_HASH:0:8}
           fi
 
-          KSU_API_VERSION=$(curl -fsSL "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/$BRANCH_NAME/kernel/Makefile" | \
+          KSU_API_VERSION=$(curl -fsSL "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/$BRANCH_NAME/kernel/Kbuild" | \
             grep -m1 "KSU_VERSION_API :=" | awk -F'= ' '{print $2}' | tr -d '[:space:]')
           if [[ -z "$KSU_API_VERSION" || "$(printf '%s\n' "$KSU_API_VERSION" "3.1.7" | sort -V | head -n1)" != "3.1.7" ]]; then
             KSU_API_VERSION="3.1.7"
@@ -574,10 +575,10 @@ jobs:
             VERSION_FULL="v$KSU_API_VERSION-$CUSTOM_TAG@$BRANCH_NAME[$USE_HASH]"
           fi
 
-          # 清理并写入 Makefile 版本信息
-          sed -i '/define get_ksu_version_full/,/endef/d' kernel/Makefile
-          sed -i '/KSU_VERSION_API :=/d' kernel/Makefile
-          sed -i '/KSU_VERSION_FULL :=/d' kernel/Makefile
+          # 清理并写入 Kbuild 版本信息
+          sed -i '/define get_ksu_version_full/,/endef/d' kernel/Kbuild
+          sed -i '/KSU_VERSION_API :=/d' kernel/Kbuild
+          sed -i '/KSU_VERSION_FULL :=/d' kernel/Kbuild
 
           VERSION_DEFINITIONS=$(cat <<EOF
             define get_ksu_version_full
@@ -593,14 +594,14 @@ jobs:
             /REPO_OWNER :=/ {print; print def; inserted=1; next}
             1
             END {if (!inserted) print def}
-          ' kernel/Makefile > kernel/Makefile.tmp && mv kernel/Makefile.tmp kernel/Makefile
+          ' kernel/Kbuild > kernel/Kbuild.tmp && mv kernel/Kbuild.tmp kernel/Kbuild
 
           KSU_VERSION=$(expr $(git rev-list --count main 2>/dev/null || echo 13000) + 37185)
           echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
 
-          echo "::group::最终 Makefile 中版本信息及部分调试结果预览"
-          grep -A10 "REPO_OWNER" kernel/Makefile
-          grep "KSU_VERSION_FULL" kernel/Makefile
+          echo "::group::最终 Kbuild 中版本信息及部分调试结果预览"
+          grep -A10 "REPO_OWNER" kernel/Kbuild
+          grep "KSU_VERSION_FULL" kernel/Kbuild
           echo "::endgroup::"
 
       - name: Apply Patches SukiSU Ultra
